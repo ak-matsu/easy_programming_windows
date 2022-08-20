@@ -7,9 +7,13 @@ var sh = new ActiveXObject( "WScript.Shell" );
 sh.Run("control MAIN.CPL");
 
 //  起動してすぐにキー送信すると失敗する可能性があるので、3秒停止
-WScript.Sleep( 3000 );
+WScript.Sleep( 100 );
 
-// WshShell.Run("control MAIN.CPL");
-// wait("ポインター オプション")
-// WshShell.SendKeys ("^"+"{TAB}");
-// WshShell.SendKeys ("^{TAB 3}");
+sh.SendKeys ("^{TAB 2}");
+sh.SendKeys ("{TAB}");
+WScript.Sleep( 100 );
+sh.SendKeys ("e");
+sh.SendKeys ("{TAB 5}");
+WScript.Sleep( 100 );
+sh.SendKeys ("{ENTER}");
+sh.SendKeys ("%{F4}")
