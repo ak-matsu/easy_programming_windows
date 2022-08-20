@@ -1,3 +1,5 @@
+// https://nyanshiba.hatenablog.com/entry/2017/08/21/221555
+
 var wait = function(title){
     do {
 	WScript.Sleep(100);
