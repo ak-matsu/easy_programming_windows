@@ -1,3 +1,5 @@
+// http://jscript.zouri.jp/Source/KeybordCtrl.html
+
 //  Shell関連の操作を提供するオブジェクトを取得
 var sh = new ActiveXObject( "WScript.Shell" );
 
