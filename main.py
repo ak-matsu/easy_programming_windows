@@ -1,4 +1,6 @@
 import hello
 
+a = "hello"
+b = "world"
 
-hello.output("hello","world")
+hello.output(a,b)
