@@ -1,2 +1,3 @@
-def output():
-    print('Hello!')
+def output(x,y):
+    print(x)
+    print(y)

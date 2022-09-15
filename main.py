@@ -1,4 +1,4 @@
 import hello
 
 
-hello.output()
+hello.output("hello","world")
