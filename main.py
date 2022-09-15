@@ -1,0 +1,4 @@
+import hello
+
+
+hello.output()
