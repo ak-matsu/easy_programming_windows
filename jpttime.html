@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>時間の表示</title>
+    <style>
+        h2 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="time"></h2>
+
+    <script>
+        function update() {
+            var now = new Date();
+            var jptHours = ("0" + now.getHours()).slice(-2);
+            var jptMinutes = ("0" + now.getMinutes()).slice(-2);
+            var jptSeconds = ("0" + now.getSeconds()).slice(-2);
+
+            document.getElementById('time').innerHTML = 
+                "JPT: " + now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + 
+                jptHours + ":" + jptMinutes + ":" + jptSeconds;
+        }
+
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>
