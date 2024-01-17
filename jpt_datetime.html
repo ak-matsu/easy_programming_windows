@@ -15,12 +15,15 @@
     <script>
         function update() {
             var now = new Date();
+            var jptYear = now.getFullYear();
+            var jptMonth = ("0" + (now.getMonth()+1)).slice(-2);
+            var jptDate = ("0" + now.getDate()).slice(-2);
             var jptHours = ("0" + now.getHours()).slice(-2);
             var jptMinutes = ("0" + now.getMinutes()).slice(-2);
             var jptSeconds = ("0" + now.getSeconds()).slice(-2);
 
             document.getElementById('time').innerHTML = 
-                "JPT: " + now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() + " " + 
+                "JPT: " + jptYear + "/" + jptMonth + "/" + jptDate + " " + 
                 jptHours + ":" + jptMinutes + ":" + jptSeconds;
         }
 
