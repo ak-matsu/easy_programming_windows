@@ -41,7 +41,7 @@ def convert_image(file_path):
 
 def drop(event):
     file_path = event.data
-    if file_path.endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+    if os.path.isfile(file_path) and file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
         root.configure(bg='white')  # ドロップ後は背景色を白に戻す
         convert_image(file_path)
     else:
