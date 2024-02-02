@@ -21,14 +21,14 @@ def get_default_gateway():
     return gws['default'][netifaces.AF_INET][0]
 
 def check_ping(host, text, start, stats):
-    text.insert(tk.END, f'{host} に ping を送信しています 32 バイトのデータ:\n')
+    text.insert(tk.END, f'{host} に ping を送信しています:\n')
     while start[0]:
         result = ping(host)
         if result is None:
-            result_str = f'{host} からの応答: バイト数 =32 時間 =N/A ms TTL=N/A\n'
+            result_str = f'{host} からの応答: 時間 =N/A ms TTL=N/A\n'
             stats[host]['loss'] += 1
         else:
-            result_str = f'{host} からの応答: バイト数 =32 時間 ={int(result*1000)}ms TTL=58\n'
+            result_str = f'{host} からの応答: 時間 ={int(result*1000)}ms TTL=58\n'
             stats[host]['min'] = min(stats[host]['min'], result) if stats[host]['min'] is not None else result
             stats[host]['max'] = max(stats[host]['max'], result) if stats[host]['max'] is not None else result
             stats[host]['total'] += result
@@ -36,6 +36,7 @@ def check_ping(host, text, start, stats):
         text.insert(tk.END, result_str)
         text.see(tk.END)
         time.sleep(1)
+        
     # Display statistics when ping stops
     if stats[host]['count'] > 0:
         avg = stats[host]['total'] / stats[host]['count']
