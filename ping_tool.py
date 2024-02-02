@@ -28,25 +28,27 @@ def check_ping(host, text, start):
 
 
 root = tk.Tk()
-texts = [tk.Text(root) for _ in range(5)]
+labels = [tk.Label(root, text=label) for label in ['ループバックアドレス', 'ローカルIP', 'ルータ', 'デフォルトゲートウェイ', '外部サーバ1', '外部サーバ2']]
+texts = [tk.Text(root) for _ in range(6)]
 start = [False]
 def toggle_start():
     start[0] = not start[0]
     if start[0]:
         button.config(text='停止', bg='red')
-        for host, text in zip(['127.0.0.1', get_local_ip(), 'ルータのIP', 'デフォルトゲートウェイのIP', '8.8.8.8'], texts):
+        for host, text in zip(['127.0.0.1', get_local_ip(), 'ルータのIP', 'デフォルトゲートウェイのIP', '8.8.8.8', '8.8.4.4'], texts):
             Thread(target=check_ping, args=(host, text, start), daemon=True).start()
     else:
         button.config(text='開始', bg='green')
 
 button = tk.Button(root, text='開始', command=toggle_start, bg='green')
 
-# Place the text boxes and button in the desired layout
-texts[0].grid(row=0, column=0)  # Loopback address
-texts[1].grid(row=0, column=1)  # Local network
-texts[2].grid(row=0, column=2)  # Router
-texts[3].grid(row=1, column=0)  # Default gateway
-texts[4].grid(row=1, column=1)  # External server
-button.grid(row=1, column=2)    # Start Ping button
+# Place the labels, text boxes and button in the desired layout
+for i in range(3):
+    labels[i].grid(row=0, column=i)
+    texts[i].grid(row=1, column=i)
+for i in range(3, 6):
+    labels[i].grid(row=2, column=i-3)
+    texts[i].grid(row=3, column=i-3)
+button.grid(row=4, column=1)    # Start Ping button
 
 root.mainloop()
