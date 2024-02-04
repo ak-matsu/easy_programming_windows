@@ -1,27 +1,27 @@
 import os
-import subprocess  # 追加
+import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
-from tkinterdnd2 import DND_FILES, TkinterDnD
 
-def convert_image(file_path):
-    # 保存先フォルダ選択ダイアログを表示
-    save_dir = filedialog.askdirectory()
-    
-    # キャンセルが押された場合
-    if not save_dir:
-        messagebox.showinfo('Info', 'キャンセルされました')
-        return
+def resize_image(img, aspect_ratio):
+    width, height = img.size
+    if aspect_ratio == 16/9:
+        return img.resize((800, 450))
+    elif aspect_ratio == 4/3:
+        return img.resize((800, 600))
+    else:  # アスペクト比が異なる場合
+        return img
 
+def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
     # 画像を開く
     img = Image.open(file_path)
     
-    # 画像のアスペクト比を維持
-    width, height = img.size
-    aspect_ratio = width / height
+    # アスペクト比に基づいて画像をリサイズ
+    if aspect_ratio:
+        img = resize_image(img, aspect_ratio)
     
-    # 1MB以下になるように品質を調整して保存
+    # max_size_kb以下になるように品質を調整して保存
     for quality in range(100, 0, -1):
         index = 1
         while True:
@@ -30,48 +30,41 @@ def convert_image(file_path):
                 break
             index += 1
         img.save(save_path, 'JPEG', quality=quality)
-        if os.path.getsize(save_path) <= 1024 * 1024:  # 1MB以下になったら終了
+        if os.path.getsize(save_path) <= max_size_kb * 1024:  # max_size_kb以下になったら終了
             break
-        os.remove(save_path)  # 1MBを超えるファイルは削除
+        os.remove(save_path)  # max_size_kbを超えるファイルは削除
 
     # 保存先のフォルダを開く
     subprocess.Popen(['explorer', save_dir.replace('/', '\\')])
 
     messagebox.showinfo('Info', '画像の変換が完了しました')
 
-def drop(event):
-    file_path = event.data
-    if os.path.isfile(file_path) and file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-        root.configure(bg='white')  # ドロップ後は背景色を白に戻す
-        convert_image(file_path)
-    else:
-        messagebox.showinfo('Info', '画像ファイルをドロップしてください')
-
-def drag_enter(event):
-    root.configure(bg='lightgreen')  # ドラッグ中は背景色を緑にする
-
-def drag_leave(event):
-    root.configure(bg='white')  # ドラッグが終わったら背景色を白に戻す
-
-def select_file():
+def select_file(aspect_ratio=None, max_size_kb=50):
     file_path = filedialog.askopenfilename(filetypes=[('All Files', '*.*')])
     if file_path:
-        convert_image(file_path)
+        save_dir = filedialog.askdirectory()
+        if not save_dir:
+            messagebox.showinfo('Info', 'キャンセルされました')
+            return
+        img = Image.open(file_path)
+        width, height = img.size
+        aspect_ratio = 16/9 if width > height else 4/3
+        if abs(width/height - aspect_ratio) > 0.01:  # アスペクト比が近くない場合
+            aspect_ratio = width / height  # 元のアスペクト比を維持
+        convert_image(file_path, save_dir, aspect_ratio, max_size_kb)
 
 # GUIを作成
-root = TkinterDnD.Tk()
+root = tk.Tk()
 root.title('Image Converter')
 root.geometry('500x500')
 
-drop_area = tk.Label(root, text='ここに画像ファイルをドロップしてください', bd=1, relief='solid')
-drop_area.pack(fill='both', expand=True)
+frame = tk.Frame(root)
+frame.pack(expand=True)
 
-root.drop_target_register(DND_FILES)
-root.dnd_bind('<<Drop>>', drop)
-root.dnd_bind('<<DragEnter>>', drag_enter)
-root.dnd_bind('<<DragLeave>>', drag_leave)
+description = tk.Label(root, text="16:9なら800*450、4:3なら800*600\nそれ以外はリサイズと\nそれぞれ500kb以内に変換")
+description.pack(pady=10)
 
-btn = tk.Button(root, text='画像を選択', command=select_file)
-btn.pack(padx=20, pady=20)
+btn_convert = tk.Button(frame, text='画像変換', command=lambda: select_file(max_size_kb=500))
+btn_convert.pack(side='left', padx=20, pady=20)
 
 root.mainloop()
