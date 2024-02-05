@@ -41,21 +41,23 @@ def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
     # 保存先のフォルダを開く
     subprocess.Popen(['explorer', save_dir.replace('/', '\\')])
 
-    messagebox.showinfo('Info', '画像の変換が完了しました')
-
-def select_file(aspect_ratio=None, max_size_kb=50):
-    file_path = filedialog.askopenfilename(filetypes=[('All Files', '*.*')])
-    if file_path:
-        save_dir = filedialog.askdirectory()
-        if not save_dir:
-            messagebox.showinfo('Info', 'キャンセルされました')
-            return
+def select_files(aspect_ratio=None, max_size_kb=50):
+    file_paths = filedialog.askopenfilenames(filetypes=[('All Files', '*.*')])
+    if not file_paths:
+        messagebox.showinfo('Info', 'キャンセルされました')
+        return
+    save_dir = filedialog.askdirectory()
+    if not save_dir:
+        messagebox.showinfo('Info', 'キャンセルされました')
+        return
+    for file_path in file_paths:
         img = Image.open(file_path)
         width, height = img.size
         aspect_ratio = 16/9 if width > height else 4/3
         if abs(width/height - aspect_ratio) > 0.01:  # アスペクト比が近くない場合
             aspect_ratio = width / height  # 元のアスペクト比を維持
         convert_image(file_path, save_dir, aspect_ratio, max_size_kb)
+    messagebox.showinfo('Info', '画像の変換が完了しました')
 
 # GUIを作成
 root = tk.Tk()
@@ -65,10 +67,10 @@ root.geometry('500x500')
 frame = tk.Frame(root)
 frame.pack(expand=True)
 
-description = tk.Label(root, text="16:9なら800*450、4:3なら800*600\nそれ以外はリサイズと\nそれぞれ500kb以内に変換")
+description = tk.Label(root, text="500kb以内に変換します。\n16:9なら800*450\n4:3なら800*600\n対象外はリサイズ")
 description.pack(pady=10)
 
-btn_convert = tk.Button(frame, text='画像変換', command=lambda: select_file(max_size_kb=500))
+btn_convert = tk.Button(frame, text='画像変換', command=lambda: select_files(max_size_kb=500))
 btn_convert.pack(side='left', padx=20, pady=20)
 
 root.mainloop()
