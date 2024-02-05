@@ -21,6 +21,10 @@ def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
     if aspect_ratio:
         img = resize_image(img, aspect_ratio)
     
+    # RGBA画像をRGBに変換
+    if img.mode == 'RGBA':
+        img = img.convert('RGB')
+    
     # max_size_kb以下になるように品質を調整して保存
     for quality in range(100, 0, -1):
         index = 1
