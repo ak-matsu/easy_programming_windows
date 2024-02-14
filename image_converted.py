@@ -3,6 +3,7 @@ import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
+from moviepy.editor import VideoFileClip
 
 def resize_image(img, aspect_ratio):
     width, height = img.size
@@ -38,10 +39,23 @@ def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
             break
         os.remove(save_path)  # max_size_kbを超えるファイルは削除
 
-    # 保存先のフォルダを開く
-    subprocess.Popen(['explorer', save_dir.replace('/', '\\')])
+def convert_video(file_path, save_dir, max_size_mb=30):
+    clip = VideoFileClip(file_path)
+    clip_resized = clip.resize(height=360)  # アスペクト比を維持しながら高さを360pxにリサイズ
+    index = 1
+    while True:
+        save_path = os.path.join(save_dir, f'converted_{index}.mp4')
+        if not os.path.exists(save_path):
+            break
+        index += 1
+    clip_resized.write_videofile(save_path, codec='libx264', audio_codec='aac', bitrate="2000k")
+    if os.path.getsize(save_path) > max_size_mb * 1024 * 1024:  # max_size_mbを超える場合
+        os.remove(save_path)  # max_size_mbを超えるファイルは削除
+        messagebox.showinfo('Info', '動画のサイズが大きすぎます')
+    else:
+        messagebox.showinfo('Info', '動画の変換が完了しました')
 
-def select_files(aspect_ratio=None, max_size_kb=50):
+def select_files(aspect_ratio=None, max_size_kb=50, max_size_mb=30):
     file_paths = filedialog.askopenfilenames(filetypes=[('All Files', '*.*')])
     if not file_paths:
         messagebox.showinfo('Info', 'キャンセルされました')
@@ -51,26 +65,31 @@ def select_files(aspect_ratio=None, max_size_kb=50):
         messagebox.showinfo('Info', 'キャンセルされました')
         return
     for file_path in file_paths:
-        img = Image.open(file_path)
-        width, height = img.size
-        aspect_ratio = 16/9 if width > height else 4/3
-        if abs(width/height - aspect_ratio) > 0.01:  # アスペクト比が近くない場合
-            aspect_ratio = width / height  # 元のアスペクト比を維持
-        convert_image(file_path, save_dir, aspect_ratio, max_size_kb)
-    messagebox.showinfo('Info', '画像の変換が完了しました')
+        if file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+            img = Image.open(file_path)
+            width, height = img.size
+            aspect_ratio = 16/9 if width > height else 4/3
+            if abs(width/height - aspect_ratio) > 0.01:  # アスペクト比が近くない場合
+                aspect_ratio = width / height  # 元のアスペクト比を維持
+            convert_image(file_path, save_dir, aspect_ratio, max_size_kb)
+            messagebox.showinfo('Info', '画像の変換が完了しました')
+        elif file_path.lower().endswith(('.mp4', '.avi', '.mov')):
+            convert_video(file_path, save_dir, max_size_mb)
+    # 保存先のフォルダを開く
+    subprocess.Popen(['explorer', save_dir.replace('/', '\\')])
 
 # GUIを作成
 root = tk.Tk()
-root.title('Image Converter')
+root.title('Image and Video Converter')
 root.geometry('500x500')
 
 frame = tk.Frame(root)
 frame.pack(expand=True)
 
-description = tk.Label(root, text="500kb以内に変換します。\n16:9なら800*450\n4:3なら800*600\n対象外はリサイズ")
+description = tk.Label(root, text="画像は500kb以内に、動画は30mb以内に変換します。\n16:9なら800*450\n4:3なら800*600\n対象外はリサイズ")
 description.pack(pady=10)
 
-btn_convert = tk.Button(frame, text='画像変換', command=lambda: select_files(max_size_kb=500))
+btn_convert = tk.Button(frame, text='ファイル変換', command=lambda: select_files(max_size_kb=500, max_size_mb=30))
 btn_convert.pack(side='left', padx=20, pady=20)
 
 root.mainloop()
