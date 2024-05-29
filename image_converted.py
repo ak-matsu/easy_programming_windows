@@ -15,18 +15,11 @@ def resize_image(img, aspect_ratio):
         return img
 
 def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
-    # 画像を開く
     img = Image.open(file_path)
-    
-    # アスペクト比に基づいて画像をリサイズ
     if aspect_ratio:
         img = resize_image(img, aspect_ratio)
-    
-    # RGBA画像をRGBに変換
     if img.mode == 'RGBA':
         img = img.convert('RGB')
-    
-    # max_size_kb以下になるように品質を調整して保存
     for quality in range(100, 0, -1):
         index = 1
         while True:
@@ -35,13 +28,13 @@ def convert_image(file_path, save_dir, aspect_ratio=None, max_size_kb=50):
                 break
             index += 1
         img.save(save_path, 'JPEG', quality=quality)
-        if os.path.getsize(save_path) <= max_size_kb * 1024:  # max_size_kb以下になったら終了
+        if os.path.getsize(save_path) <= max_size_kb * 1024:
             break
-        os.remove(save_path)  # max_size_kbを超えるファイルは削除
+        os.remove(save_path)
 
 def convert_video(file_path, save_dir, max_size_mb=30):
     clip = VideoFileClip(file_path)
-    clip_resized = clip.resize(height=360)  # アスペクト比を維持しながら高さを360pxにリサイズ
+    clip_resized = clip.resize(height=360)
     index = 1
     while True:
         save_path = os.path.join(save_dir, f'converted_{index}.mp4')
@@ -49,11 +42,11 @@ def convert_video(file_path, save_dir, max_size_mb=30):
             break
         index += 1
     clip_resized.write_videofile(save_path, codec='libx264', audio_codec='aac', bitrate="2000k")
-    if os.path.getsize(save_path) > max_size_mb * 1024 * 1024:  # max_size_mbを超える場合
-        os.remove(save_path)  # max_size_mbを超えるファイルは削除
-        messagebox.showinfo('Info', '動画のサイズが大きすぎます')
+    if os.path.getsize(save_path) > max_size_mb * 1024 * 1024:
+        os.remove(save_path)
+        return False
     else:
-        messagebox.showinfo('Info', '動画の変換が完了しました')
+        return True
 
 def select_files(aspect_ratio=None, max_size_kb=50, max_size_mb=30):
     file_paths = filedialog.askopenfilenames(filetypes=[('All Files', '*.*')])
@@ -69,16 +62,16 @@ def select_files(aspect_ratio=None, max_size_kb=50, max_size_mb=30):
             img = Image.open(file_path)
             width, height = img.size
             aspect_ratio = 16/9 if width > height else 4/3
-            if abs(width/height - aspect_ratio) > 0.01:  # アスペクト比が近くない場合
-                aspect_ratio = width / height  # 元のアスペクト比を維持
+            if abs(width/height - aspect_ratio) > 0.01:
+                aspect_ratio = width / height
             convert_image(file_path, save_dir, aspect_ratio, max_size_kb)
-            messagebox.showinfo('Info', '画像の変換が完了しました')
         elif file_path.lower().endswith(('.mp4', '.avi', '.mov')):
-            convert_video(file_path, save_dir, max_size_mb)
-    # 保存先のフォルダを開く
+            if not convert_video(file_path, save_dir, max_size_mb):
+                messagebox.showinfo('Info', '動画のサイズが大きすぎます')
+                return
+    messagebox.showinfo('Info', '変換が完了しました')
     subprocess.Popen(['explorer', save_dir.replace('/', '\\')])
 
-# GUIを作成
 root = tk.Tk()
 root.title('Image and Video Converter')
 root.geometry('500x500')
